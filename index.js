@@ -38,19 +38,26 @@ async function run() {
     app.get("/products", async (req, res) => {
       const page = parseInt(req.query.page);
       const size = parseInt(req.query.size);
-      
-      const queryData  = req.query;
-      
+
+      const { searchText, maxPrice, minPrice } = req.query;
+      console.log(searchText, maxPrice);
       const query = {
         name: {
-          $regex: queryData?.searchText,
+          $regex: searchText,
           $options: "i",
         },
       };
-       // search products
-       if (queryData?.searchText) {
+      // search products
+      if (searchText) {
         const products = await productsCollection.find(query).toArray();
         return res.send(products);
+      }
+      // max and minimum price sorting
+      if (minPrice>0 && maxPrice<20000) {
+        const result = await productsCollection
+          .find({ price: { $gte: parseInt(minPrice), $lte: parseInt(maxPrice) } })
+          .toArray();
+      return  res.send(result);
       }
       // get all products
       const products = await productsCollection
@@ -59,14 +66,13 @@ async function run() {
         .limit(size)
         .toArray();
       res.send(products);
-     
     });
     // total products langth
     app.get("/totalProduct", async (req, res) => {
       const count = await productsCollection.estimatedDocumentCount();
       res.send({ count });
     });
-    
+
     console.log("connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
