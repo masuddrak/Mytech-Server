@@ -9,7 +9,7 @@ const port = 5000;
 // middelware
 
 const corsOptions = {
-  origin: ["http://localhost:5173"],
+  origin: ["http://localhost:5173","https://trackshop-e2f38.web.app"],
   credentials: true,
   optionSuccessStatus: 200,
 };
@@ -39,14 +39,15 @@ async function run() {
       const page = parseInt(req.query.page);
       const size = parseInt(req.query.size);
 
-      const { searchText, maxPrice, minPrice } = req.query;
-      console.log(searchText, maxPrice);
+      const { searchText, maxPrice, minPrice,category ,brand_name} = req.query;
+      console.log(searchText, maxPrice,category,brand_name);
       const query = {
         name: {
           $regex: searchText,
           $options: "i",
         },
       };
+     
       // max and minimum price sorting
       if (minPrice>0 && maxPrice<20000) {
         const result = await productsCollection
@@ -59,7 +60,16 @@ async function run() {
         const products = await productsCollection.find(query).toArray();
         return res.send(products);
       }
-      
+       // load product category basis
+       if(category){
+        const result=await productsCollection.find({category}).toArray()
+        return res.send(result)
+      }
+       // load product brand basis
+       if(brand_name){
+        const result=await productsCollection.find({brand_name}).toArray()
+        return res.send(result)
+      }
       // get all products
       const products = await productsCollection
         .find()
