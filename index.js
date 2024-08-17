@@ -30,7 +30,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const MyTechDB = client.db("MyTechDB");
     const productsCollection = MyTechDB.collection("products");
@@ -47,11 +47,6 @@ async function run() {
           $options: "i",
         },
       };
-      // search products
-      if (searchText) {
-        const products = await productsCollection.find(query).toArray();
-        return res.send(products);
-      }
       // max and minimum price sorting
       if (minPrice>0 && maxPrice<20000) {
         const result = await productsCollection
@@ -59,6 +54,12 @@ async function run() {
           .toArray();
       return  res.send(result);
       }
+      // search products
+      if (searchText) {
+        const products = await productsCollection.find(query).toArray();
+        return res.send(products);
+      }
+      
       // get all products
       const products = await productsCollection
         .find()
@@ -72,6 +73,7 @@ async function run() {
       const count = await productsCollection.estimatedDocumentCount();
       res.send({ count });
     });
+    
 
     console.log("connected to MongoDB!");
   } finally {
